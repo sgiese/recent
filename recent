@@ -1,0 +1,52 @@
+#!/bin/bash
+
+function usage() {
+echo "
+Usage: ${0##*/} [OPTIONS] [DIRECTORY] [DIRECTORY] ... [DIRECTORY]
+Display the most recent file(s) in the given directory(ies). With no options will display the single most recent file in the current directory.
+
+OPTIONS
+
+-h	: Display this help message.
+-a	: Return absolute file paths
+-n[NUM]	: Display [NUM] recent files.
+"
+exit
+}
+
+num_files=1
+ls_post=''
+
+while getopts "han:" opt; do
+  case $opt in
+    h)
+      usage;
+      ;;
+    a)
+      ls_post='/*'
+      ;;
+    n)
+      num_files=${OPTARG}
+      ;;
+    ?)
+      usage
+      exit
+      ;;
+  esac
+done
+
+
+# clear all getopts arguments; leaving only (possible) directories
+  shift "$(($OPTIND -1))"
+
+# If no directories are provided, set the current directory as the default
+if [ $# -eq 0 ]; then
+  set -- "$(pwd)"
+fi
+
+# if we have arguments left they are (should be) directories so loop through them
+while [ ! -z $1 ]
+  do
+    echo "$(ls -t $1$ls_post | head -n$num_files)"
+    shift 1
+  done
